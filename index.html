@@ -1,0 +1,840 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Competition Time Tracker</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #697386;
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --border: #e2e6ef;
+      --danger: #dc2626;
+      --success: #059669;
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1100px, 92%);
+      margin: 0 auto;
+      padding: 40px 0 60px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    /* SUMMARY */
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 25px;
+    }
+
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .summary-card .label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .summary-card .value {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    /* FORM */
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .card h2 {
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      align-items: end;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 12px 18px;
+      transition: 0.2s;
+    }
+
+    .add-btn {
+      background: var(--primary);
+      color: white;
+      height: 45px;
+    }
+
+    .add-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    /* PREVIEW */
+
+    .preview {
+      margin-top: 18px;
+      padding: 13px 15px;
+      border-radius: 10px;
+      background: #f0fdf4;
+      color: var(--success);
+      font-weight: 600;
+      display: none;
+    }
+
+    /* TABLE */
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .export-btn {
+      background: #eef2ff;
+      color: var(--primary-dark);
+    }
+
+    .clear-btn {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    td {
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .badge.lunch {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge.after-school {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .delete-btn {
+      background: #fee2e2;
+      color: var(--danger);
+      padding: 7px 11px;
+      font-size: 0.8rem;
+    }
+
+    .delete-btn:hover {
+      background: #fecaca;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 35px 10px;
+    }
+
+    /* FOOTER */
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 30px;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 750px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .table-actions {
+        width: 100%;
+      }
+
+      .table-actions button {
+        flex: 1;
+      }
+
+      .container {
+        padding-top: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header>
+      <h1>⏱️ Competition Time Tracker</h1>
+      <p>Track the time spent working during lunch and after school.</p>
+    </header>
+
+
+    <!-- SUMMARY -->
+
+    <section class="summary">
+
+      <div class="summary-card">
+        <div class="label">Total Time</div>
+        <div class="value" id="totalTime">0h 0m</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">Lunch Time</div>
+        <div class="value" id="lunchTime">0h 0m</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="label">After School</div>
+        <div class="value" id="afterSchoolTime">0h 0m</div>
+      </div>
+
+    </section>
+
+
+    <!-- ADD SESSION -->
+
+    <section class="card">
+
+      <h2>Add a Session</h2>
+
+      <form id="sessionForm">
+
+        <div class="form-grid">
+
+          <div class="field">
+            <label for="type">Session Type</label>
+
+            <select id="type" required>
+              <option value="Lunch">Lunch</option>
+              <option value="After School">After School</option>
+            </select>
+          </div>
+
+
+          <div class="field">
+            <label for="start">Start Time</label>
+            <input type="time" id="start" required />
+          </div>
+
+
+          <div class="field">
+            <label for="end">End Time</label>
+            <input type="time" id="end" required />
+          </div>
+
+        </div>
+
+
+        <div class="preview" id="preview">
+          Duration: <span id="previewDuration">0 minutes</span>
+        </div>
+
+
+        <button class="add-btn" type="submit" style="margin-top:18px;">
+          + Add Session
+        </button>
+
+      </form>
+
+    </section>
+
+
+    <!-- SESSION HISTORY -->
+
+    <section class="card">
+
+      <div class="table-header">
+
+        <h2>Session History</h2>
+
+        <div class="table-actions">
+          <button class="export-btn" id="exportBtn">
+            Export CSV
+          </button>
+
+          <button class="clear-btn" id="clearBtn">
+            Clear All
+          </button>
+        </div>
+
+      </div>
+
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Duration</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody id="sessionTable"></tbody>
+
+        </table>
+
+      </div>
+
+      <div class="empty" id="emptyMessage">
+        No sessions recorded yet.
+      </div>
+
+    </section>
+
+
+    <footer>
+      Your data is stored locally in this browser.
+    </footer>
+
+  </div>
+
+
+<script>
+
+  // ==========================================
+  // DATA
+  // ==========================================
+
+  let sessions = JSON.parse(
+    localStorage.getItem("competitionSessions") || "[]"
+  );
+
+
+  // ==========================================
+  // ELEMENTS
+  // ==========================================
+
+  const form = document.getElementById("sessionForm");
+
+  const typeInput = document.getElementById("type");
+  const startInput = document.getElementById("start");
+  const endInput = document.getElementById("end");
+
+  const preview = document.getElementById("preview");
+  const previewDuration = document.getElementById("previewDuration");
+
+  const table = document.getElementById("sessionTable");
+  const emptyMessage = document.getElementById("emptyMessage");
+
+  const totalTime = document.getElementById("totalTime");
+  const lunchTime = document.getElementById("lunchTime");
+  const afterSchoolTime = document.getElementById("afterSchoolTime");
+
+  const exportBtn = document.getElementById("exportBtn");
+  const clearBtn = document.getElementById("clearBtn");
+
+
+  // ==========================================
+  // TIME FUNCTIONS
+  // ==========================================
+
+  function timeToMinutes(time) {
+
+    const [hours, minutes] = time.split(":").map(Number);
+
+    return hours * 60 + minutes;
+  }
+
+
+  function calculateDuration(start, end) {
+
+    let startMinutes = timeToMinutes(start);
+    let endMinutes = timeToMinutes(end);
+
+    // If the end is technically earlier,
+    // assume the session passed midnight.
+    if (endMinutes < startMinutes) {
+      endMinutes += 24 * 60;
+    }
+
+    return endMinutes - startMinutes;
+  }
+
+
+  function formatDuration(minutes) {
+
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    return `${hours}h ${mins}m`;
+  }
+
+
+  // ==========================================
+  // LIVE DURATION PREVIEW
+  // ==========================================
+
+  function updatePreview() {
+
+    if (!startInput.value || !endInput.value) {
+      preview.style.display = "none";
+      return;
+    }
+
+    const duration = calculateDuration(
+      startInput.value,
+      endInput.value
+    );
+
+    previewDuration.textContent =
+      `${formatDuration(duration)} (${duration} minutes)`;
+
+    preview.style.display = "block";
+  }
+
+
+  startInput.addEventListener("input", updatePreview);
+  endInput.addEventListener("input", updatePreview);
+
+
+  // ==========================================
+  // ADD SESSION
+  // ==========================================
+
+  form.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    const type = typeInput.value;
+    const start = startInput.value;
+    const end = endInput.value;
+
+    const duration = calculateDuration(start, end);
+
+    if (duration <= 0) {
+      alert("Please enter a valid start and end time.");
+      return;
+    }
+
+    const session = {
+
+      id: Date.now(),
+
+      type: type,
+
+      start: start,
+
+      end: end,
+
+      duration: duration,
+
+      date: new Date().toISOString()
+
+    };
+
+
+    sessions.push(session);
+
+    saveSessions();
+
+    form.reset();
+
+    preview.style.display = "none";
+
+    render();
+
+  });
+
+
+  // ==========================================
+  // SAVE DATA
+  // ==========================================
+
+  function saveSessions() {
+
+    localStorage.setItem(
+      "competitionSessions",
+      JSON.stringify(sessions)
+    );
+
+  }
+
+
+  // ==========================================
+  // DELETE SESSION
+  // ==========================================
+
+  function deleteSession(id) {
+
+    sessions = sessions.filter(
+      session => session.id !== id
+    );
+
+    saveSessions();
+
+    render();
+
+  }
+
+
+  // ==========================================
+  // RENDER TABLE
+  // ==========================================
+
+  function render() {
+
+    table.innerHTML = "";
+
+
+    if (sessions.length === 0) {
+
+      emptyMessage.style.display = "block";
+
+    } else {
+
+      emptyMessage.style.display = "none";
+
+    }
+
+
+    // Newest sessions first
+
+    const sortedSessions = [...sessions].reverse();
+
+
+    sortedSessions.forEach(session => {
+
+      const row = document.createElement("tr");
+
+
+      const badgeClass =
+        session.type === "Lunch"
+          ? "lunch"
+          : "after-school";
+
+
+      row.innerHTML = `
+
+        <td>
+          <span class="badge ${badgeClass}">
+            ${session.type}
+          </span>
+        </td>
+
+        <td>${formatTime(session.start)}</td>
+
+        <td>${formatTime(session.end)}</td>
+
+        <td>
+          <strong>${formatDuration(session.duration)}</strong>
+        </td>
+
+        <td>
+          <button
+            class="delete-btn"
+            onclick="deleteSession(${session.id})"
+          >
+            Delete
+          </button>
+        </td>
+
+      `;
+
+
+      table.appendChild(row);
+
+    });
+
+
+    updateTotals();
+
+  }
+
+
+  // ==========================================
+  // FORMAT TIME
+  // ==========================================
+
+  function formatTime(time) {
+
+    const [hours, minutes] = time.split(":");
+
+    const date = new Date();
+
+    date.setHours(Number(hours));
+    date.setMinutes(Number(minutes));
+
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    });
+
+  }
+
+
+  // ==========================================
+  // TOTALS
+  // ==========================================
+
+  function updateTotals() {
+
+    let total = 0;
+    let lunch = 0;
+    let afterSchool = 0;
+
+
+    sessions.forEach(session => {
+
+      total += session.duration;
+
+      if (session.type === "Lunch") {
+
+        lunch += session.duration;
+
+      }
+
+      if (session.type === "After School") {
+
+        afterSchool += session.duration;
+
+      }
+
+    });
+
+
+    totalTime.textContent = formatDuration(total);
+
+    lunchTime.textContent = formatDuration(lunch);
+
+    afterSchoolTime.textContent =
+      formatDuration(afterSchool);
+
+  }
+
+
+  // ==========================================
+  // CLEAR ALL
+  // ==========================================
+
+  clearBtn.addEventListener("click", function() {
+
+    if (sessions.length === 0) {
+      return;
+    }
+
+    const confirmed = confirm(
+      "Are you sure you want to delete ALL sessions?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    sessions = [];
+
+    saveSessions();
+
+    render();
+
+  });
+
+
+  // ==========================================
+  // EXPORT CSV
+  // ==========================================
+
+  exportBtn.addEventListener("click", function() {
+
+    if (sessions.length === 0) {
+
+      alert("There are no sessions to export.");
+
+      return;
+
+    }
+
+
+    let csv =
+      "Session Type,Start Time,End Time,Duration (minutes),Duration\n";
+
+
+    sessions.forEach(session => {
+
+      csv += `"${session.type}",`;
+      csv += `"${formatTime(session.start)}",`;
+      csv += `"${formatTime(session.end)}",`;
+      csv += `"${session.duration}",`;
+      csv += `"${formatDuration(session.duration)}"\n`;
+
+    });
+
+
+    const blob = new Blob(
+      [csv],
+      { type: "text/csv;charset=utf-8;" }
+    );
+
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+
+    link.download = "competition-time-tracker.csv";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+  });
+
+
+  // ==========================================
+  // INITIAL LOAD
+  // ==========================================
+
+  render();
+
+</script>
+
+</body>
+</html>
+```
